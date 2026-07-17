@@ -1,9 +1,0 @@
-DEF_MODEL = "Qwen/Qwen3-0.6B"
-DEF_MAX_CHUNK_SIZE = 2000
-DEF_PATH_...
-DEF_PATH_...
-DEF_PATH_...
-
-B =
-K1 = 
-PROMPT = ""

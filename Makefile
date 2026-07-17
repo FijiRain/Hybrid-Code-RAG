@@ -1,4 +1,4 @@
-SRC = rag
+SRC = src
 VENV = .venv
 PYTHON = $(VENV)/bin/python3
 RUN = uv run
@@ -39,7 +39,7 @@ install:
 
 
 run:
-	@$(RUN) -m $(SRC)
+	@$(RUN) python -m $(SRC) $(ARGS)
 
 lint:
 	@echo "$(BOLD)Verifying project source code:$(RESET)"
