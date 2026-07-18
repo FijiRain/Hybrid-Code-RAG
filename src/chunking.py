@@ -1,5 +1,6 @@
-from langchain_text_splitters import PythonCodeTextSplitter
 from tqdm import tqdm
+from langchain_text_splitters import (PythonCodeTextSplitter,
+                                      MarkdownTextSplitter)
 
 from .data_models import MinimalSource
 from .constants import OVERLAP
@@ -19,6 +20,26 @@ from .constants import OVERLAP
 #     print(f"{errors} / {len(sources)} chunks mismatched")
 
 
+def extract_chunk(file_path: str, content: str, chunks: list[str],
+            overlap: int) -> list[MinimalSource]:
+    sources = []
+    cursor = 0
+    for i, chunk in enumerate(chunks):
+        start_index = content.find(chunk, cursor)
+        end_index = start_index + len(chunk)
+        # bc if end_index < OVERLAP, cursor < 0 so next iter will fail...
+        cursor = max(start_index, end_index - overlap)
+        entity = MinimalSource(
+                                file_path=file_path,
+                                first_character_index=start_index,
+                                last_character_index=end_index,
+                                chunk_index=i,
+                                content=chunk,
+                                )
+        sources.append(entity)
+    return sources
+
+
 def py_chunker(files: list[tuple[str, str]],
                max_chunk_size: int) -> list[MinimalSource]:
     sources = []
@@ -27,30 +48,22 @@ def py_chunker(files: list[tuple[str, str]],
                                 chunk_size=max_chunk_size,
                                 chunk_overlap=OVERLAP
                                 )
-    for elem in tqdm(files, desc="Chunking Python files...", colour="green"):
+    for elem in tqdm(files, desc="Chunking Python files...",
+                     colour="#05701C"):
         chunks = chunker.split_text(elem[1])
-        cursor = 0
-        for i, chunk in enumerate(chunks):
-            start_index = elem[1].find(chunk, cursor)
-            end_index = start_index + len(chunk)
-            # bc if end_index < OVERLAP, cursor < 0 so next iter will fail...
-            cursor = max(start_index, end_index - OVERLAP)
-            entity = MinimalSource(file_path=elem[0],
-                                   first_character_index=start_index,
-                                   last_character_index=end_index,
-                                   chunk_index=i,
-                                   content=chunk)
-            sources.append(entity)
+        sources.extend(extract_chunk(elem[0], elem[1], chunks, OVERLAP))
     return sources
 
-# ABCDEFGHIJKLMNOPQRSTUVWXYZ 5 et 2
-# S  C E
-# 0  3 5
-#    S  C E
-#    3  6 8
-# ABCDE DEFGH GHIJK JKLMN MNOPQ PQRST STUVW VWXYZ
 
 def md_chunker(files: list[tuple[str, str]],
                max_chunk_size: int) -> list[MinimalSource]:
-    # print(files[0])
-    ...
+    sources = []
+    chunker = MarkdownTextSplitter(
+                            chunk_size=max_chunk_size,
+                            chunk_overlap=OVERLAP
+                            )
+    for elem in tqdm(files, desc="Chunking Markdown files...",
+                     colour="#05701C"):
+        chunks = chunker.split_text(elem[1])
+        sources.extend(extract_chunk(elem[0], elem[1], chunks, OVERLAP))
+    return sources
