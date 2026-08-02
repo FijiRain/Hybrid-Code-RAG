@@ -25,8 +25,10 @@ Example Usage
 - RAG expliqué simplement [video](https://www.youtube.com/watch?v=5V3t7YXYjZc)
 - Cours [produit scalaire](https://www.maths-et-tiques.fr/telech/ProduitScal.pdf)
 - What is a [vLLM](https://www.redhat.com/en/topics/ai/what-is-vllm)?
+- TF-IDF [video](https://www.youtube.com/watch?v=OymqCnh-APA)
 - BM25 Algorithm [article](https://www.elastic.co/fr/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables)
 - How BM25 works in [practice](https://www.youtube.com/watch?v=TW9vHU1GpU4)
+- Another video on [BM25](https://www.youtube.com/watch?v=ruBm9WywevM&list=WL&index=87)
 - How to chunk Python and .md [video](https://www.youtube.com/watch?v=aZHXY_oVQt8)
 - LangChain [doc](https://lagnchain.readthedocs.io/en/stable/modules/indexes) on splitters
 - BM25S [doc](https://bm25s.github.io)
