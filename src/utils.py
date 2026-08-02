@@ -6,7 +6,6 @@ from .constants import DATA_CHUNKS
 
 
 def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
-
     target_dir = Path(DATA_CHUNKS)
     target_dir.mkdir(parents=True, exist_ok=True)
 

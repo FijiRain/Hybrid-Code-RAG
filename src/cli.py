@@ -56,6 +56,7 @@ class Cli():
             raise ValueError("Query cannnot be empty.")
         if k < 0:
             raise ValueError("k must be > 0.")
+
         query_tokens = bm25s.tokenize(query)
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_PROCESSED)
@@ -65,14 +66,17 @@ class Cli():
                   f"[{i["first_character_index"]}:"
                   f"{i["last_character_index"]}]")
 
-        '''
-        Eventuellement :
+    def search_dataset(self, dataset_path: str, k: int,
+                       save_directory: str) -> None:
+        ...
 
-        results, scores = retriever.retrieve(query_tokens, all_chunks, k)
-                for i in results[0]:
-                    print(f"{i["file_path"]} "
-                          f"[{i["first_character_index"]}:"
-                          f"{i["last_character_index"]}]")
+    def answer(self, query: str, k: int) -> None:
+        ...
 
-        et utiliser le score comme une metadata d'une data model ?
-        '''
+    def answer_dataset(self, student_search_results_path: str,
+                       save_directory: str) -> None:
+        ...
+
+    def evaluate(self, student_search_results_path: str,
+                 dataset_path: str) -> None:
+        ...
