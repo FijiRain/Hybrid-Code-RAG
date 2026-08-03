@@ -6,6 +6,7 @@ from .constants import (DEF_MAX_CHUNK_SIZE, DATA_PROCESSED,
 from .chunking import py_chunker, md_chunker
 from .utils import load_files, dump_chunks, reload_chunks
 from .chunking import verify_indices
+from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 
 
 class Cli():
@@ -64,11 +65,34 @@ class Cli():
         for i in results[0][0]:
             print(f"{i["file_path"]} "
                   f"[{i["first_character_index"]}:"
-                  f"{i["last_character_index"]}]")
+                  f"{i["last_character_index"]}]") # retravailler si refactor, on retournera une liste de MinimalSource a la place
 
     def search_dataset(self, dataset_path: str, k: int,
                        save_directory: str) -> None:
-        ...
+        try:
+            with open(dataset_path, "r") as f:
+                dataset = RagDataset.model_validate_json(f.read())
+        except FileNotFoundError:
+            raise FileNotFoundError("Incorrect dataset_path value.")
+        if k < 0:
+            raise ValueError("k must be > 0.")
+
+        results_list = []
+        for uq in dataset.rag_questions:
+            top_sources = []  # remplacer par une fonction : func(uq.question, k) et implementer comme le search en haut, refactor possible
+            question_tokens = bm25s.tokenize(uq.question)  #  Est-ce que ca va pas poser probleme parce que le tokenizer n'est pas au meme endroit que le tokenizer du corpus?
+            # retrieval ici
+            result = MinimalSearchResults(question_id=uq.question_id,
+                                          question=uq.question,
+                                          retrieved_sources=top_sources)
+            results_list.append(result)
+
+        result = StudentSearchResults(search_results=results_list, k=k)
+        try:
+            with open(save_directory, "w") as f:
+                ...
+        except FileNotFoundError:
+            raise FileNotFoundError("Incorrect save_directory value.")
 
     def answer(self, query: str, k: int) -> None:
         ...
