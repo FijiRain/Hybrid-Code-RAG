@@ -5,7 +5,15 @@ from .constants import DEF_MAX_CHUNK_SIZE, DATA_INDEX
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 from .indexing import build_index
 from .searching import search_sources
-from .utils import reload_chunks
+from .utils import reload_chunks, save_searchresults
+
+'''
+copypasta
+
+index           : uv run python -m src index
+search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
+search data_set : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory output/search_results/UnansweredQuestions
+'''
 
 
 class Cli():
@@ -49,12 +57,9 @@ class Cli():
             minsearch_list.append(ms_result)
 
         result = StudentSearchResults(search_results=minsearch_list, k=k)
-        print(result)
-        try:
-            with open(save_directory, "w") as f:
-                ...
-        except FileNotFoundError:
-            raise FileNotFoundError("Incorrect save_directory value.")
+        save_searchresults(result, save_directory)
+        print(f"[bold green]Saved student_search_results "
+              f"to {save_directory}[/bold green]")
 
     def answer(self, query: str, k: int) -> None:
         ...

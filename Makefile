@@ -2,7 +2,7 @@ SRC = src
 VENV = .venv
 PYTHON = $(VENV)/bin/python3
 RUN = uv run
-TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output
+TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output output
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports \
 			--disallow-untyped-defs --check-untyped-defs 
 

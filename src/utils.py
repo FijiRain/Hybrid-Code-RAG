@@ -3,6 +3,7 @@ from typing import Any
 from pathlib import Path
 
 from .constants import DATA_CHUNKS
+from .data_models import StudentSearchResults
 
 
 def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
@@ -42,3 +43,14 @@ def load_files(dir: str) -> list[tuple[str, str]]:
         with open(file, "r") as content:
             res.append((file, content.read()))
     return res
+
+
+def save_searchresults(search_res: StudentSearchResults,
+                       save_dir: str) -> None:
+    try:
+        dir = Path(save_dir)
+        dir.mkdir(parents=True, exist_ok=True)
+        file_path = dir / "StudentSearchResults.json"
+        file_path.write_text(search_res.model_dump_json(indent=2))
+    except OSError:
+        raise OSError("Incorrect save_directory value.")
