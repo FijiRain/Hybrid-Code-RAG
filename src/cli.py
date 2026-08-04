@@ -1,10 +1,10 @@
 from rich import print
 import bm25s
 
-from .constants import DEF_MAX_CHUNK_SIZE, DATA_PROCESSED
-from .utils import reload_chunks
+from .constants import DEF_MAX_CHUNK_SIZE
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 from .indexing import build_index
+from .searching import search_sources
 
 
 class Cli():
@@ -17,14 +17,12 @@ class Cli():
         if k < 0:
             raise ValueError("k must be > 0.")
 
-        query_tokens = bm25s.tokenize(query)
-        all_chunks = reload_chunks()
-        retriever = bm25s.BM25.load(DATA_PROCESSED)
-        results = retriever.retrieve(query_tokens, all_chunks, k)
-        for i in results[0][0]:
-            print(f"{i["file_path"]} "
-                  f"[{i["first_character_index"]}:"
-                  f"{i["last_character_index"]}]") # retravailler si refactor, on retournera une liste de MinimalSource a la place
+        results = search_sources(query, k)
+        for source in results:
+            print(
+                f"{source.file_path} "
+                f"[{source.first_character_index}:{source.last_character_index}]"
+            )
 
     def search_dataset(self, dataset_path: str, k: int,
                        save_directory: str) -> None:
