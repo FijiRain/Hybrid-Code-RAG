@@ -18,11 +18,14 @@ def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
 
 def reload_chunks() -> list[dict[str, Any]]:
     target = Path(DATA_CHUNKS)
-    with Path(target / "py_chunks.json").open("r") as f:
-        py_chunks = json.load(f)
+    try:
+        with Path(target / "py_chunks.json").open("r") as f:
+            py_chunks = json.load(f)
 
-    with Path(target / "md_chunks.json").open("r") as f:
-        md_chunks = json.load(f)
+        with Path(target / "md_chunks.json").open("r") as f:
+            md_chunks = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError("You must index before searching anything.")
 
     chunks_reloaded = py_chunks + md_chunks
     return chunks_reloaded

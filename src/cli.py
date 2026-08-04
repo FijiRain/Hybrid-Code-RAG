@@ -1,10 +1,11 @@
-from rich import print
 import bm25s
+from rich import print
 
-from .constants import DEF_MAX_CHUNK_SIZE
+from .constants import DEF_MAX_CHUNK_SIZE, DATA_PROCESSED
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 from .indexing import build_index
 from .searching import search_sources
+from .utils import reload_chunks
 
 
 class Cli():
@@ -14,14 +15,17 @@ class Cli():
     def search(self, query: str, k: int) -> None:
         if not query:
             raise ValueError("Query cannnot be empty.")
-        if k < 0:
+        if k <= 0:
             raise ValueError("k must be > 0.")
 
-        results = search_sources(query, k)
+        all_chunks = reload_chunks()
+        retriever = bm25s.BM25.load(DATA_PROCESSED)
+        results = search_sources(query, k, all_chunks, retriever)
         for source in results:
             print(
                 f"{source.file_path} "
-                f"[{source.first_character_index}:{source.last_character_index}]"
+                f"[{source.first_character_index}:"
+                f"{source.last_character_index}]"
             )
 
     def search_dataset(self, dataset_path: str, k: int,
@@ -31,14 +35,14 @@ class Cli():
                 dataset = RagDataset.model_validate_json(f.read())
         except FileNotFoundError:
             raise FileNotFoundError("Incorrect dataset_path value.")
-        if k < 0:
+        if k <= 0:
             raise ValueError("k must be > 0.")
 
+        all_chunks = reload_chunks()
+        retriever = bm25s.BM25.load(DATA_PROCESSED)
         results_list = []
         for uq in dataset.rag_questions:
-            top_sources = []  # remplacer par une fonction : func(uq.question, k) et implementer comme le search en haut, refactor possible
-            question_tokens = bm25s.tokenize(uq.question)  #  Est-ce que ca va pas poser probleme parce que le tokenizer n'est pas au meme endroit que le tokenizer du corpus?
-            # retrieval ici
+            top_sources = search_sources(uq.question, k, all_chunks, retriever)
             result = MinimalSearchResults(question_id=uq.question_id,
                                           question=uq.question,
                                           retrieved_sources=top_sources)
