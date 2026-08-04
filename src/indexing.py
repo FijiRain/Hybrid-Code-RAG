@@ -2,7 +2,7 @@ from rich import print
 import bm25s
 
 from .chunking import md_chunker, py_chunker, verify_indices
-from .constants import (DATA_CHUNKS, DATA_PROCESSED, DATA_RAW,
+from .constants import (DATA_CHUNKS, DATA_INDEX, DATA_RAW,
                         DEF_MAX_CHUNK_SIZE)
 from .utils import dump_chunks, load_files
 
@@ -43,7 +43,7 @@ def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
     all_chunks_dict = py_data_dict + md_data_dict
     retriever = bm25s.BM25(corpus=all_chunks_dict)
     retriever.index(corpus_tokens)
-    retriever.save(DATA_PROCESSED)
+    retriever.save(DATA_INDEX)
 
     print((
         f"[bold green]Ingestion complete! Indexed "

@@ -1,7 +1,7 @@
 import bm25s
 from rich import print
 
-from .constants import DEF_MAX_CHUNK_SIZE, DATA_PROCESSED
+from .constants import DEF_MAX_CHUNK_SIZE, DATA_INDEX
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 from .indexing import build_index
 from .searching import search_sources
@@ -19,7 +19,7 @@ class Cli():
             raise ValueError("k must be > 0.")
 
         all_chunks = reload_chunks()
-        retriever = bm25s.BM25.load(DATA_PROCESSED)
+        retriever = bm25s.BM25.load(DATA_INDEX)
         results = search_sources(query, k, all_chunks, retriever)
         for source in results:
             print(
@@ -39,16 +39,17 @@ class Cli():
             raise ValueError("k must be > 0.")
 
         all_chunks = reload_chunks()
-        retriever = bm25s.BM25.load(DATA_PROCESSED)
-        results_list = []
+        retriever = bm25s.BM25.load(DATA_INDEX)
+        minsearch_list = []
         for uq in dataset.rag_questions:
             top_sources = search_sources(uq.question, k, all_chunks, retriever)
-            result = MinimalSearchResults(question_id=uq.question_id,
-                                          question=uq.question,
-                                          retrieved_sources=top_sources)
-            results_list.append(result)
+            ms_result = MinimalSearchResults(question_id=uq.question_id,
+                                             question=uq.question,
+                                             retrieved_sources=top_sources)
+            minsearch_list.append(ms_result)
 
-        result = StudentSearchResults(search_results=results_list, k=k)
+        result = StudentSearchResults(search_results=minsearch_list, k=k)
+        print(result)
         try:
             with open(save_directory, "w") as f:
                 ...

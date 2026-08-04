@@ -27,7 +27,7 @@ def reload_chunks() -> list[dict[str, Any]]:
     except FileNotFoundError:
         raise FileNotFoundError("You must index before searching anything.")
 
-    chunks_reloaded = py_chunks + md_chunks
+    chunks_reloaded: list[dict[str, Any]] = py_chunks + md_chunks
     return chunks_reloaded
 
 
