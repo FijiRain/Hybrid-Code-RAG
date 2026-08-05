@@ -14,7 +14,14 @@ System Architecture
 Chunking strategy
 Retrieval method
 Performance analysis
-Design decisions
+
+Design decisions:
+
+J'ai décidé pour ce projet de refuser toute approche déterministe lors de la recherche des sources afin d'être au plus proche d'un RAG en production.
+En effet, la méthode search_dataset() pourrait décider de ne citer en source que des fichiers .md lorsqu'on lui donne un chemin où le fichier .json mentionne "_docs_" (*ex: datasets_public/public/UnansweredQuestions/dataset_docs_public.json*). Mais cela irait à l'opposé de l'idée même d'un vrai RAG qui en pratique ne peut pas initialement savoir quel type de fichier sera le mieux adapté pour répondre à une question (car c'est le but du retriever).
+C'est pour cela que mon indexing ne sépare pas les sources .md et .py mais calcule un score pour l'ensemble des sources, indépendamment de leur nature en évitant ensuite un duplicata inutile d'une pipeline qui augmenterait la complexité spatiale du programme.
+
+
 Challenges faced
 Example Usage
 
