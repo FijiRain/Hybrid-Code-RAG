@@ -48,6 +48,7 @@ class Cli():
 
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_INDEX)
+        # Faire un scission entre les sources .md/.py pour le retrieval?
         minsearch_list = []
         for uq in dataset.rag_questions:
             top_sources = search_sources(uq.question, k, all_chunks, retriever)
