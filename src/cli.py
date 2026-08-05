@@ -13,6 +13,7 @@ copypasta
 index           : uv run python -m src index
 search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
 search data_set : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory output/search_results/UnansweredQuestions
+moulinette      : ./moulinette evaluate_student_search_results output/search_results/UnansweredQuestions/UnansweredQuestions.json datasets_public/public/AnsweredQuestions/dataset_code_public.json --k 10 --max_context_length 2000
 '''
 
 

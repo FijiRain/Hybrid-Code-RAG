@@ -11,8 +11,8 @@ def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
     if max_chunk_size < 0 or max_chunk_size > DEF_MAX_CHUNK_SIZE:
         raise ValueError("--max_chunk_size range is 0 to 2000 max.")
 
-    # Empirically based on 12% of chunk size for recall@k score
-    overlap = (max_chunk_size * 12) // 100
+    # Empirically based on 20% of chunk size for recall@k score
+    overlap = (max_chunk_size * 20) // 100
 
     files = load_files(DATA_RAW)
     py_files = [f for f in files if f[0].endswith(".py")]
