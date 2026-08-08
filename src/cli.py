@@ -12,9 +12,28 @@ from .utils import reload_chunks, save_searchresults
 copypasta
 
 index           : uv run python -m src index
-search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
-search data_set : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory data/output/search_results/UnansweredQuestions
-moulinette      : ./moulinette evaluate_student_search_results output/search_results/UnansweredQuestions/UnansweredQuestions.json datasets_public/public/AnsweredQuestions/dataset_code_public.json --k 10 --max_context_length 2000
+search          : uv run python -m src search
+                  "How to configure the OpenAI server?" --k 5
+search dataset  : uv run python -m src search_dataset
+                  --dataset_path
+                  datasets_public/public/UnansweredQuestions/
+                  dataset_docs_public.json --k 10
+                  --save_directory
+                  data/output/search_results/UnansweredQuestions
+moulinette      : ./moulinette evaluate_student_search_results
+                  output/search_results/UnansweredQuestions/
+                  UnansweredQuestions.json
+                  datasets_public/public/AnsweredQuestions/
+                  dataset_code_public.json --k 10
+                  --max_context_length 2000
+
+answer_dataset  : uv run python -m src answer_dataset
+                  --student_search_results_path
+                  data/output/search_results/UnansweredQuestions/
+                  dataset_docs_public.json
+                  --save_directory
+                  data/output/search_results_and_answer/
+                  UnansweredQuestions
 '''
 
 
@@ -65,7 +84,31 @@ class Cli():
               f"to {save_directory}/{filename}[/bold green]")
 
     def answer(self, query: str, k: int) -> None:
-        ...
+        if not query:
+            raise ValueError("Query cannnot be empty.")
+        if k <= 0:
+            raise ValueError("k must be > 0.")
+
+        all_chunks = reload_chunks()
+        retriever = bm25s.BM25.load(DATA_INDEX)
+        search_res = search_sources(query, k, all_chunks, retriever)
+        context = [s.content for s in search_res]
+        prompt = (
+            "You are a question-answering assistant. "
+            "Answer the question based exclusively on the provided context. "
+            "Do not use outside knowledge. Do not invent or assume "
+            "information that is not present in the context. If the context "
+            "does not contain "
+            "enough information to answer the question, reply exactly: "
+            "'I don't have enough information to answer this question.'\n\n"
+            "### Context\n\n"
+            f"{context}\n\n"
+            "### Question\n\n"
+            f"{query}\n\n"
+            "### Answer\n"
+        )
+        
+
 
     def answer_dataset(self, student_search_results_path: str,
                        save_directory: str) -> None:
