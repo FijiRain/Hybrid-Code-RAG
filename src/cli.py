@@ -1,5 +1,6 @@
 import bm25s
 from rich import print
+from pathlib import Path
 
 from .constants import DEF_MAX_CHUNK_SIZE, DATA_INDEX
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
@@ -12,7 +13,7 @@ copypasta
 
 index           : uv run python -m src index
 search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
-search data_set : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory output/search_results/UnansweredQuestions
+search data_set : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory data/output/search_results/UnansweredQuestions
 moulinette      : ./moulinette evaluate_student_search_results output/search_results/UnansweredQuestions/UnansweredQuestions.json datasets_public/public/AnsweredQuestions/dataset_code_public.json --k 10 --max_context_length 2000
 '''
 
@@ -49,7 +50,6 @@ class Cli():
 
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_INDEX)
-        # Faire un scission entre les sources .md/.py pour le retrieval?
         minsearch_list = []
         for uq in dataset.rag_questions:
             top_sources = search_sources(uq.question, k, all_chunks, retriever)
@@ -59,9 +59,10 @@ class Cli():
             minsearch_list.append(ms_result)
 
         result = StudentSearchResults(search_results=minsearch_list, k=k)
-        save_searchresults(result, save_directory)
+        filename = Path(dataset_path).name
+        save_searchresults(result, save_directory, filename)
         print(f"[bold green]Saved student_search_results "
-              f"to {save_directory}[/bold green]")
+              f"to {save_directory}/{filename}[/bold green]")
 
     def answer(self, query: str, k: int) -> None:
         ...

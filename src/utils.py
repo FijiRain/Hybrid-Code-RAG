@@ -46,11 +46,12 @@ def load_files(dir: str) -> list[tuple[str, str]]:
 
 
 def save_searchresults(search_res: StudentSearchResults,
-                       save_dir: str) -> None:
+                       save_dir: str,
+                       filename: str) -> None:
     try:
         dir = Path(save_dir)
         dir.mkdir(parents=True, exist_ok=True)
-        file_path = dir / "StudentSearchResults.json"
+        file_path = dir / filename
         file_path.write_text(search_res.model_dump_json(indent=2))
     except OSError:
         raise OSError("Incorrect save_directory value.")
