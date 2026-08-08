@@ -6,6 +6,7 @@ from .constants import DEF_MAX_CHUNK_SIZE, DATA_INDEX
 from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
 from .indexing import build_index
 from .searching import search_sources
+from .answering import generate_simple_answer
 from .utils import reload_chunks, save_searchresults
 
 '''
@@ -92,23 +93,7 @@ class Cli():
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_INDEX)
         search_res = search_sources(query, k, all_chunks, retriever)
-        context = [s.content for s in search_res]
-        prompt = (
-            "You are a question-answering assistant. "
-            "Answer the question based exclusively on the provided context. "
-            "Do not use outside knowledge. Do not invent or assume "
-            "information that is not present in the context. If the context "
-            "does not contain "
-            "enough information to answer the question, reply exactly: "
-            "'I don't have enough information to answer this question.'\n\n"
-            "### Context\n\n"
-            f"{context}\n\n"
-            "### Question\n\n"
-            f"{query}\n\n"
-            "### Answer\n"
-        )
-        
-
+        answer = generate_simple_answer(query, search_res, k)
 
     def answer_dataset(self, student_search_results_path: str,
                        save_directory: str) -> None:

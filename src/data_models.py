@@ -31,8 +31,8 @@ class MinimalSearchResults(BaseModel):
     retrieved_sources: List[MinimalSource]
 
 
-# class MinimalAnswer(MinimalSearchResults):
-#     answer: str
+class MinimalAnswer(MinimalSearchResults):
+    answer: str
 
 
 class StudentSearchResults(BaseModel):
@@ -40,6 +40,6 @@ class StudentSearchResults(BaseModel):
     k: int
 
 
-# class StudentSearchResultsAndAnswer(BaseModel):
-#     search_results: List[MinimalAnswer]
-#     k: int
+class StudentSearchResultsAndAnswer(BaseModel):
+    search_results: List[MinimalAnswer]
+    k: int
