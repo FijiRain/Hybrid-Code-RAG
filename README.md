@@ -31,8 +31,8 @@ Example Usage
 
 - RAG Course for Beginners [video](https://www.youtube.com/watch?v=swvzKSOEluc)
 - RAG Explained [video](https://www.youtube.com/watch?v=dDkynerzV-Q)
-- RAG expliqué simplement [video](https://www.youtube.com/watch?v=5V3t7YXYjZc)
-- Cours [produit scalaire](https://www.maths-et-tiques.fr/telech/ProduitScal.pdf)
+- "RAG expliqué simplement" [video](https://www.youtube.com/watch?v=5V3t7YXYjZc)
+- Vectors dot product [lesson](https://www.maths-et-tiques.fr/telech/ProduitScal.pdf)
 - What is a [vLLM](https://www.redhat.com/en/topics/ai/what-is-vllm)?
 - TF-IDF [video](https://www.youtube.com/watch?v=OymqCnh-APA)
 - BM25 Algorithm [article](https://www.elastic.co/fr/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables)
@@ -41,3 +41,4 @@ Example Usage
 - How to chunk Python and .md [video](https://www.youtube.com/watch?v=aZHXY_oVQt8)
 - LangChain [doc](https://lagnchain.readthedocs.io/en/stable/modules/indexes) on splitters
 - BM25S [doc](https://bm25s.github.io)
+- HF Qwen3-0.6B [doc](https://huggingface.co/Qwen/Qwen3-0.6B)
