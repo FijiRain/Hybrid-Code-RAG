@@ -2,18 +2,37 @@
 
 *This project has been created as part of the 42 curriculum by tmoga*
 
+"Heyo it's just another bombtrack!" - RAG de la Rocha certainly... 
+
 ## Description
+
+...
 
 ## Limits
 
 Chunking: Utilisation de MarkdownTextSplitter au lieu de MarkdownHeaderTextSplitter. Choix effectué en fonction de la contrainte max_chunk_size pour respecter l'énoncé et pouvoir conserver les index dans le texte d'origine. Mais en terme sémantique, l'utilisation de MarkdownHeaderTextSplitter aurait ete meilleure pour garder un meilleur contexte sur les chunks.
 
+Qwen/Qwen3-0.6B limitations
+
+.py et .md seulement
+
 ## Instructions
 
 System Architecture
+
+... 
+
 Chunking strategy
+
+...
+
 Retrieval method
+
+...
+
 Performance analysis
+
+...
 
 Design decisions:
 
@@ -25,6 +44,26 @@ Le problème est que la recherche lexicale seule ne suffit pas à avoir un score
 
 
 Challenges faced
+
+Determiner la longueur max_new_tokens pour la generation pour pas perdre en perf et en meme temps avoir des resultats coherent;
+Laisser le processus de pensee <think> de Qwen pour gagner en precision;
+Determiner un bon prompting (4 prompt differents essayés)
+Benchmake max token:
+
+Code :
+
+- 650 tokens    7/10 (3 tronqués)    167.8
+- 500 tokens    7/10                 156.1
+- 400 tokens    7/10                 143
+- 300 tokens    6/10                 134
+
+Docs :
+
+- 650 tokens    10/10   87.3
+- 500 tokens    10/10   86.1
+- 400 tokens    10/10   85.2
+- 300 tokens    9/10    81.4
+
 Example Usage
 
 ## Resources 
