@@ -1,6 +1,7 @@
 import bm25s
 from rich import print
 from pathlib import Path
+from tqdm import tqdm
 
 from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
                         SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS, SEARCH_DOCS)
@@ -72,9 +73,10 @@ class Cli():
 
         result = StudentSearchResults(search_results=minsearch_list, k=k)
         filename = Path(dataset_path).name
+        print("[bold green]Dataset search done![/bold green]")
         save_searchresults(result, save_directory, filename)
-        print(f"[bold green]Saved student_search_results "
-              f"to {save_directory}/{filename}[/bold green]")
+        print(f"[green]Saved student_search_results "
+              f"to {save_directory}/{filename}[/green]")
 
     def answer(self, query: str, k: int = 5) -> None:
         if not query:
@@ -117,5 +119,7 @@ class Cli():
                      answer_path: str = ANSWER_DOCS
                      ) -> None:
         self.index()
+        print()
         self.search_dataset(dataset_path, save_directory)
+        print()
         self.evaluate(student_search_results_path, answer_path)
