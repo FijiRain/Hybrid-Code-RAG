@@ -64,6 +64,8 @@ Docs :
 - 400 tokens    10/10   85.2
 - 300 tokens    9/10    81.4
 
+Accessible dans utils.thinking_length()
+
 Example Usage
 
 ## Resources 
