@@ -42,6 +42,8 @@ C'est pour cela que mon indexing ne sépare pas les sources .md et .py mais calc
 
 Le problème est que la recherche lexicale seule ne suffit pas à avoir un score recall@k correct. 
 
+Flexible recall@k pour l'evaluation qui scale sur la longueur des "retrieved_sources" du dataset généré par search_dataset()
+
 
 Challenges faced
 
