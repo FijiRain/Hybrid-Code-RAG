@@ -14,6 +14,14 @@ from .constants import DEF_MODEL
 
 def load_model(model_name: str = DEF_MODEL
                ) -> tuple[PreTrainedTokenizerBase, PreTrainedModel]:
+    """Load a tokenizer and causal language model from a Hugging Face model id.
+
+    Args:
+        model_name: Identifier of the pretrained model to load.
+
+    Returns:
+        A tuple containing the tokenizer and the pretrained model instance.
+    """
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name,
                                                  torch_dtype="auto",
@@ -22,6 +30,15 @@ def load_model(model_name: str = DEF_MODEL
 
 
 def build_prompt(query: str, sources: list[MinimalSource]) -> str:
+    """Build a prompt from the question and source context.
+
+    Args:
+        query: Question asked by the user.
+        sources: Relevant source chunks used to answer it.
+
+    Returns:
+        The formatted prompt ready for the model.
+    """
     # For Qwen to be more precise for sources, let's give him just the filename
     context = "\n\n".join(
         f"[SOURCE: {Path(source.file_path).name}]\n{source.content}"
@@ -53,6 +70,17 @@ def raw_generation(tokenizer: PreTrainedTokenizerBase,
                    model: PreTrainedModel,
                    prompt: str,
                    max_new_tokens: int = 700) -> str:
+    """Generate a raw answer for a given prompt.
+
+    Args:
+        tokenizer: Tokenizer used to encode and decode the prompt.
+        model: Causal language model used for generation.
+        prompt: Prompt text sent to the model.
+        max_new_tokens: Maximum number of tokens to generate.
+
+    Returns:
+        The raw text produced by the model, including reasoning tokens.
+    """
     messages = [{"role": "user", "content": prompt}]
     text = cast(str, tokenizer.apply_chat_template(
         messages,
@@ -87,6 +115,15 @@ def raw_generation(tokenizer: PreTrainedTokenizerBase,
 
 
 def parse_answer(answer: str) -> str:
+    """Extract the final answer from a model response.
+
+    Args:
+        answer: Raw model output, possibly containing reasoning content.
+
+    Returns:
+        The cleaned answer after the closing tag, or a placeholder when
+        the generation is incomplete.
+    """
     if "</think>" in answer:
         return answer.split("</think>", 1)[1].strip()
     # Edge case if max_new_tokens reached before answer generation finished
@@ -97,6 +134,17 @@ def generate_simple_answer(tokenizer: PreTrainedTokenizerBase,
                            model: PreTrainedModel,
                            query: str,
                            sources: list[MinimalSource]) -> str:
+    """Build a retrieval-grounded prompt and return the final answer text.
+
+    Args:
+        tokenizer: Tokenizer used to prepare the prompt for generation.
+        model: Model used to generate the answer.
+        query: User question to answer.
+        sources: Retrieved source chunks used as context.
+
+    Returns:
+        The final answer text extracted from the model's generation.
+    """
     prompt = build_prompt(query, sources)
     raw = raw_generation(tokenizer, model, prompt)
     return parse_answer(raw)

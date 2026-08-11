@@ -8,6 +8,14 @@ from .utils import dump_chunks, load_files
 
 
 def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
+    """Build and persist the BM25 index from the raw corpus.
+
+    Args:
+        max_chunk_size: Maximum number of characters allowed per chunk.
+
+    Returns:
+        None.
+    """
     if max_chunk_size < 0 or max_chunk_size > DEF_MAX_CHUNK_SIZE:
         raise ValueError("--max_chunk_size range is 0 to 2000 max.")
 

@@ -7,6 +7,15 @@ from .data_models import StudentSearchResults
 
 
 def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
+    """Save Python and Markdown chunks to JSON files on disk.
+
+    Args:
+        py: Chunk payloads extracted from Python files.
+        md: Chunk payloads extracted from Markdown files.
+
+    Returns:
+        None.
+    """
     target_dir = Path(DATA_CHUNKS)
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -18,6 +27,14 @@ def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
 
 
 def reload_chunks() -> list[dict[str, Any]]:
+    """Load the persisted chunk files from disk.
+
+    Returns:
+        A combined list of Python and Markdown chunk dictionaries.
+
+    Raises:
+        FileNotFoundError: If the chunk files do not exist yet.
+    """
     target = Path(DATA_CHUNKS)
     try:
         with Path(target / "py_chunks.json").open("r") as f:
@@ -33,6 +50,14 @@ def reload_chunks() -> list[dict[str, Any]]:
 
 
 def load_files(dir: str) -> list[tuple[str, str]]:
+    """Read all Python and Markdown files from a directory tree.
+
+    Args:
+        dir: Directory to scan recursively.
+
+    Returns:
+        A list of (file path, file content) tuples for the supported files.
+    """
     res = []
     dir_path = Path(dir)
     extension = {".py", ".md"}
@@ -48,6 +73,16 @@ def load_files(dir: str) -> list[tuple[str, str]]:
 def save_searchresults(search_res: StudentSearchResults,
                        save_dir: str,
                        filename: str) -> None:
+    """Persist search results to a JSON file.
+
+    Args:
+        search_res: Search results object to serialize.
+        save_dir: Directory where the file should be created.
+        filename: Name of the output file.
+
+    Returns:
+        None.
+    """
     try:
         dir = Path(save_dir)
         dir.mkdir(parents=True, exist_ok=True)
@@ -58,6 +93,11 @@ def save_searchresults(search_res: StudentSearchResults,
 
 
 def thinking_length() -> None:
+    """Run a small benchmark to estimate generation time and reasoning length.
+
+    Returns:
+        None. The benchmark results are printed to stdout.
+    """
     from .answering import build_prompt, raw_generation, load_model
     from .indexing import bm25s
     from .searching import search_sources

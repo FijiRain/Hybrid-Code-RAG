@@ -4,6 +4,7 @@ from .cli import Cli
 
 
 def main() -> None:
+    """Entry point of the package that exposes the CLI commands."""
     try:
         fire.Fire(Cli)
     except Exception as e:

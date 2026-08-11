@@ -17,10 +17,29 @@ from .utils import reload_chunks, save_searchresults, thinking_length
 
 
 class Cli():
+    """CLI entry point for indexing, searching, and evaluating RAG data."""
+
     def index(self, max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
+        """Build the BM25 index from raw source files.
+
+        Args:
+            max_chunk_size: Maximum length of each chunk used for indexing.
+
+        Returns:
+            None.
+        """
         build_index(max_chunk_size)
 
     def search(self, query: str, k: int = 5) -> None:
+        """Search the indexed corpus and print the top matching sources.
+
+        Args:
+            query: User query to search for.
+            k: Number of top results to return.
+
+        Returns:
+            None.
+        """
         if not query:
             raise ValueError("Query cannnot be empty.")
         if k <= 0:
@@ -39,6 +58,16 @@ class Cli():
     def search_dataset(self, dataset_path: str = DATA_DOCS,
                        save_directory: str = SAVE_SEARCH,
                        k: int = 5) -> None:
+        """Run retrieval over a dataset and save the search results.
+
+        Args:
+            dataset_path: Path to the dataset containing unanswered questions.
+            save_directory: Directory where results should be written.
+            k: Number of top sources to keep per question.
+
+        Returns:
+            None.
+        """
         try:
             with open(dataset_path, "r") as f:
                 dataset = RagDataset.model_validate_json(f.read())
@@ -65,6 +94,15 @@ class Cli():
               f"to {save_directory}/{filename}[/green]")
 
     def answer(self, query: str, k: int = 5) -> None:
+        """Answer a single question using the retrieval pipeline.
+
+        Args:
+            query: User question to answer.
+            k: Number of source chunks to retrieve before answering.
+
+        Returns:
+            None. The answer is printed to stdout.
+        """
         if not query:
             raise ValueError("Query cannnot be empty.")
         if k <= 0:
@@ -80,6 +118,15 @@ class Cli():
 
     def answer_dataset(self, student_search_results_path: str = SEARCH_DOCS,
                        save_directory: str = SEARCH_AND_ANSWER) -> None:
+        """Generate answers for every question in a search-results dataset.
+
+        Args:
+            student_search_results_path: Path to the saved search results file.
+            save_directory: Directory where the answer file will be written.
+
+        Returns:
+            None.
+        """
 
         student_results = StudentSearchResults.model_validate_json(
             Path(student_search_results_path).read_text())
@@ -110,6 +157,15 @@ class Cli():
 
     def evaluate(self, student_search_results_path: str = SEARCH_DOCS,
                  dataset_path: str = ANSWER_DOCS) -> None:
+        """Evaluate retrieval recall against a reference dataset.
+
+        Args:
+            student_search_results_path: Path to the retrieved results.
+            dataset_path: Reference dataset used to compute recall.
+
+        Returns:
+            None. The score is printed to stdout.
+        """
         res, k = calculate_iou(dataset_path, student_search_results_path)
         if res >= 0.8 and "docs" in student_search_results_path:
             print(f"[green]Your Recall@{k} score for docs is: "
@@ -122,6 +178,11 @@ class Cli():
 
     # Extra CLI helper commands
     def diagnose_thinking_length(self) -> None:
+        """Measure generation time on a small diagnostic set.
+
+        Returns:
+            None.
+        """
         thinking_length()
 
     def retrieval_pipeline(self, dataset_path: str = DATA_DOCS,
@@ -129,6 +190,17 @@ class Cli():
                            student_search_results_path: str = SEARCH_DOCS,
                            answer_path: str = ANSWER_DOCS
                            ) -> None:
+        """Run the full retrieval pipeline.
+
+        Args:
+            dataset_path: Dataset containing questions to retrieve.
+            save_directory: Directory where search results are written.
+            student_search_results_path: Path to saved retrieval results.
+            answer_path: Reference answer dataset for evaluation.
+
+        Returns:
+            None.
+        """
         self.index()
         print()
         self.search_dataset(dataset_path, save_directory)
