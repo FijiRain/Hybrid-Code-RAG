@@ -2,9 +2,17 @@ SRC = src
 VENV = .venv
 PYTHON = $(VENV)/bin/python3
 RUN = uv run
-TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output output
+TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output output $(SRC)/__pycache__ __pycache__ $(VENV) .mypy_cache data/output .uv_cache data/output
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports \
-			--disallow-untyped-defs --check-untyped-defs 
+			--disallow-untyped-defs --check-untyped-defs
+UV_CACHE = .uv_cache
+HF_CACHE = .hf_cache
+UV_CACHE_DIR = $(CURDIR)/$(UV_CACHE)
+HF_CACHE_DIR = $(CURDIR)/$(HF_CACHE)
+
+UV_SETUP = UV_CACHE_DIR="$(UV_CACHE_DIR)" UV_LINK_MODE=copy
+HF_SETUP = HF_HOME="$(HF_CACHE_DIR)" HUGGINGFACE_HUB_CACHE="$(HF_CACHE_DIR)/hub" TRANSFORMERS_CACHE="$(HF_CACHE_DIR)/transformers"
+
 
 # ANSI codes
 GREEN = \033[0;32m
@@ -23,6 +31,7 @@ install:
 	@echo "$(GREEN)Virtual environment setup complete$(RESET)"
 
 	@bash -c '\
+		$(UV_SETUP) $(HF_SETUP) UV_PROJECT_ENVIRONMENT="$(VENV)" \
 		uv sync & pid=$!; \
 		spin="-\|/"; i=0; \
 		yellow="\033[0;33m"; reset="\033[0m"; \
@@ -39,7 +48,7 @@ install:
 
 
 run:
-	@$(RUN) python -m $(SRC) $(ARGS)
+	@$(HF_SETUP) python -m $(SRC) $(ARGS)
 
 lint:
 	@echo "$(BOLD)Verifying project source code:$(RESET)"
