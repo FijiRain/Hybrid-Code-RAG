@@ -1,7 +1,6 @@
 import bm25s
 from rich import print
 from pathlib import Path
-from tqdm import tqdm
 
 from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
                         SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS, SEARCH_DOCS)
@@ -86,8 +85,8 @@ class Cli():
 
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_INDEX)
-        search_res = search_sources(query, k, all_chunks, retriever)
         tokenizer, model = load_model()
+        search_res = search_sources(query, k, all_chunks, retriever)
         answer_text = generate_simple_answer(tokenizer, model,
                                              query, search_res)
         print(answer_text)

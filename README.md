@@ -49,7 +49,7 @@ Challenges faced
 
 Determiner la longueur max_new_tokens pour la generation pour pas perdre en perf et en meme temps avoir des resultats coherent;
 Laisser le processus de pensee <think> de Qwen pour gagner en precision;
-Determiner un bon prompting (4 prompt differents essayés)
+Determiner un bon prompting (10 prompts differents essayés) pour les contraintes faithful, source-grounded etc. Qwen est capricieux.
 Benchmake max token:
 
 Code :
