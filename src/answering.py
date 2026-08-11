@@ -26,8 +26,8 @@ def build_prompt(query: str, sources: list[MinimalSource]) -> str:
     prompt = (
         "Answer the question in a complete, self-contained sentence, "
         "using only the information in the context below."
-        "Your answer must explicitly name the source file it draws from "
-        "so the last element of [SOURCE] label in 'Context'.\n\n"
+        # "Your answer must explicitly name the source file it draws from "
+        # "so the last element of [SOURCE] label in 'Context'.\n\n"
         "Example 1 (documentation source):\n"
         "Context: [SOURCE: generative_models.md]\n...\n"
         "Question: Where can I find information about X?\n"
