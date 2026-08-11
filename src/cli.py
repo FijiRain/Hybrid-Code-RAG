@@ -1,32 +1,19 @@
 import bm25s
 from rich import print
 from pathlib import Path
+from tqdm import tqdm
 
 from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
-                        SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS, SEARCH_DOCS)
-from .data_models import RagDataset, MinimalSearchResults, StudentSearchResults
+                        SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS,
+                        SEARCH_DOCS, SEARCH_AND_ANSWER)
+from .data_models import (RagDataset, MinimalSearchResults,
+                          StudentSearchResults, StudentSearchResultsAndAnswer,
+                          MinimalAnswer)
 from .indexing import build_index
 from .searching import search_sources
 from .answering import generate_simple_answer, load_model
 from .evaluating import calculate_iou
 from .utils import reload_chunks, save_searchresults, thinking_length
-
-'''
-copypasta
-
-index           : uv run python -m src index
-search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
-search dataset  : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_code_public.json
-moulinette      : ./moulinette evaluate_student_search_results output/search_results/UnansweredQuestions/dataset_docs_public.json datasets_public/public/AnsweredQuestions/dataset_docs_public.json --k 10 --max_context_length 2000
-
-answer_dataset  : uv run python -m src answer_dataset
-                  --student_search_results_path
-                  data/output/search_results/UnansweredQuestions/
-                  dataset_docs_public.json
-                  --save_directory
-                  data/output/search_results_and_answer/
-                  UnansweredQuestions
-'''
 
 
 class Cli():
@@ -91,10 +78,35 @@ class Cli():
                                              query, search_res)
         print(answer_text)
 
-    def answer_dataset(self, student_search_results_path: str,
-                       save_directory: str) -> None:
-        # TODO
-        ...
+    def answer_dataset(self, student_search_results_path: str = SEARCH_DOCS,
+                       save_directory: str = SEARCH_AND_ANSWER) -> None:
+
+        student_results = StudentSearchResults.model_validate_json(
+            Path(student_search_results_path).read_text())
+        tokenizer, model = load_model()
+
+        answers = []
+        for res in tqdm(student_results.search_results,
+                        desc="Generating answers...", colour="green"):
+            answer_text = generate_simple_answer(
+                tokenizer, model, res.question, res.retrieved_sources)
+            answers.append(MinimalAnswer(
+                question_id=res.question_id,
+                question=res.question,
+                retrieved_sources=res.retrieved_sources,
+                answer=answer_text))
+
+        output = StudentSearchResultsAndAnswer(search_results=answers,
+                                               k=student_results.k)
+
+        save_path = Path(save_directory)
+        save_path.mkdir(parents=True, exist_ok=True)
+        output_file = save_path / f"{Path(student_search_results_path)
+                                     .stem}_answers.json"
+        output_file.write_text(output.model_dump_json(indent=2))
+
+        print(f"[bold green]Generated {len(answers)} answers, "
+              f"saved to {output_file}[/bold green]")
 
     def evaluate(self, student_search_results_path: str = SEARCH_DOCS,
                  dataset_path: str = ANSWER_DOCS) -> None:
@@ -112,11 +124,11 @@ class Cli():
     def diagnose_thinking_length(self) -> None:
         thinking_length()
 
-    def all_pipeline(self, dataset_path: str = DATA_DOCS,
-                     save_directory: str = SAVE_SEARCH,
-                     student_search_results_path: str = SEARCH_DOCS,
-                     answer_path: str = ANSWER_DOCS
-                     ) -> None:
+    def retrieval_pipeline(self, dataset_path: str = DATA_DOCS,
+                           save_directory: str = SAVE_SEARCH,
+                           student_search_results_path: str = SEARCH_DOCS,
+                           answer_path: str = ANSWER_DOCS
+                           ) -> None:
         self.index()
         print()
         self.search_dataset(dataset_path, save_directory)

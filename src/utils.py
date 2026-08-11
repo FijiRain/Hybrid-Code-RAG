@@ -57,7 +57,7 @@ def save_searchresults(search_res: StudentSearchResults,
         raise OSError("Incorrect save_directory value.")
 
 
-def thinking_length():
+def thinking_length() -> None:
     from .answering import build_prompt, raw_generation, load_model
     from .indexing import bm25s
     from .searching import search_sources
@@ -105,7 +105,7 @@ def thinking_length():
         ),
     ]
 
-    tot = 0
+    tot: float = 0
     for q in test_questions:
         all_chunks = reload_chunks()
         retriever = bm25s.BM25.load(DATA_INDEX)

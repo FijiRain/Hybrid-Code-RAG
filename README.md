@@ -50,6 +50,7 @@ Challenges faced
 Determiner la longueur max_new_tokens pour la generation pour pas perdre en perf et en meme temps avoir des resultats coherent;
 Laisser le processus de pensee <think> de Qwen pour gagner en precision;
 Determiner un bon prompting (10 prompts differents essayés) pour les contraintes faithful, source-grounded etc. Qwen est capricieux.
+Une balise dans le prompt est commentée pour une meilleure generation, mais en la reactivant Qwen generera les sources avec une precision approximative. 
 Benchmake max token:
 
 Code :
@@ -69,6 +70,19 @@ Docs :
 Accessible dans utils.thinking_length()
 
 Example Usage
+
+index           : uv run python -m src index
+search          : uv run python -m src search "How to configure the OpenAI server?" --k 5
+search dataset  : uv run python -m src search_dataset --dataset_path datasets_public/public/UnansweredQuestions/dataset_code_public.json
+moulinette      : ./moulinette evaluate_student_search_results output/search_results/UnansweredQuestions/dataset_docs_public.json datasets_public/public/AnsweredQuestions/dataset_docs_public.json --k 10 --max_context_length 2000
+
+answer_dataset  : uv run python -m src answer_dataset
+                  --student_search_results_path
+                  data/output/search_results/UnansweredQuestions/
+                  dataset_docs_public.json
+                  --save_directory
+                  data/output/search_results_and_answer/
+                  UnansweredQuestions
 
 ## Resources 
 

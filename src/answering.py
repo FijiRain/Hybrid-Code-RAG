@@ -1,6 +1,10 @@
 from pathlib import Path
+from typing import Any, cast
+
+import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils_base import BatchEncoding
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 
 
@@ -45,29 +49,41 @@ def build_prompt(query: str, sources: list[MinimalSource]) -> str:
     return prompt
 
 
-def raw_generation(tokenizer, model, prompt: str,
+def raw_generation(tokenizer: PreTrainedTokenizerBase,
+                   model: PreTrainedModel,
+                   prompt: str,
                    max_new_tokens: int = 700) -> str:
     messages = [{"role": "user", "content": prompt}]
-    text = tokenizer.apply_chat_template(
+    text = cast(str, tokenizer.apply_chat_template(
         messages,
         tokenize=False,
         add_generation_prompt=True,
         enable_thinking=True,
-    )
-    inputs = tokenizer([text], return_tensors="pt").to(model.device)
+    ))
+    encoded_inputs = cast(BatchEncoding,
+                          tokenizer([text], return_tensors="pt"))
+    inputs = cast(BatchEncoding, encoded_inputs.to(model.device))
 
-    # Pylance has an incorrect type inference for AutoModelForCausalLM
-    generated_ids = model.generate(  # type: ignore[reportAttributeAccessIssue]
-                            **inputs,
-                            max_new_tokens=max_new_tokens,
-                            do_sample=False,
-                            repetition_penalty=1.3)
+    generated_ids = cast(
+        torch.Tensor,
+        cast(Any, model).generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            repetition_penalty=1.3,
+        ),
+    )
     # replace repetition_penalty=1.3 w/ no_repeat_ngram_size=3 if regression
 
     # To avoid decode() returns prompt + answer
-    return tokenizer.decode(
-        generated_ids[0][len(inputs.input_ids[0]):], skip_special_tokens=True
+    res = cast(
+        str,
+        tokenizer.decode(
+            generated_ids[0][len(inputs.input_ids[0]):],
+            skip_special_tokens=True,
+        ),
     )
+    return res
 
 
 def parse_answer(answer: str) -> str:
@@ -77,7 +93,9 @@ def parse_answer(answer: str) -> str:
     return "[INCOMPLETE GENERATION: increase max_new_tokens]"
 
 
-def generate_simple_answer(tokenizer, model, query: str,
+def generate_simple_answer(tokenizer: PreTrainedTokenizerBase,
+                           model: PreTrainedModel,
+                           query: str,
                            sources: list[MinimalSource]) -> str:
     prompt = build_prompt(query, sources)
     raw = raw_generation(tokenizer, model, prompt)
