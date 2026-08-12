@@ -54,8 +54,8 @@ lint:
 	@echo "$(BOLD)Verifying project source code:$(RESET)"
 
 	@echo "$(YELLOW)Running flake8 and mypy...$(RESET)"
-	@$(RUN) -m flake8 .
-	@$(RUN) -m mypy . $(MYPY_FLAGS)
+	@$(RUN) -m flake8 $(SRC)
+	@$(RUN) -m mypy $(MYPY_FLAGS) $(SRC)
 	@echo "$(GREEN)LINT OK$(RESET)"
 
 debug:

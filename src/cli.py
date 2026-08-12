@@ -65,8 +65,9 @@ class Cli():
             chunks_content = [c["content"] for c in all_chunks]
             emb_chunks = model.encode(chunks_content)
             np.save(SEM_CHUNKS, emb_chunks)
-            results = semantic_search(model, query, k, all_chunks, emb_chunks)
-            for src in results:
+            s_results = semantic_search(model, query, k,
+                                        all_chunks, emb_chunks)
+            for src in s_results:
                 print(f"{src.file_path} [Score: {src.score}]")
         # ------------------
 
@@ -118,17 +119,17 @@ class Cli():
             emb_chunks = build_embeddings_index(model, all_chunks)
             for uq in tqdm(dataset.rag_questions, desc="Score generation",
                            colour="green"):
-                top_sources = semantic_search(model, uq.question,
-                                              k, all_chunks, emb_chunks)
+                s_sources = semantic_search(model, uq.question,
+                                            k, all_chunks, emb_chunks)
                 sm_result = SemanticSearchResult(question_id=uq.question_id,
                                                  question=uq.question,
-                                                 retrieved_sources=top_sources)
+                                                 retrieved_sources=s_sources)
                 search_list.append(sm_result)
-            result = StudentSemanticSearchResults(search_results=search_list,
-                                                  k=k)
+            s_result = StudentSemanticSearchResults(search_results=search_list,
+                                                    k=k)
             filename = Path(dataset_path).name
             print("[bold green]Dataset semantic search done![/bold green]")
-            save_searchresults(result, save_directory, filename)
+            save_searchresults(s_result, save_directory, filename)
             print(f"[green]Saved student_search_results "
                   f"to {save_directory}{filename}[/green]")
         # -------------------
