@@ -5,7 +5,7 @@ import torch
 from typing import Any
 from sentence_transformers import SentenceTransformer
 
-from .data_models import MinimalSource
+from .data_models import MinimalSource, SemanticSource
 
 
 def search_sources(query: str, k: int,
@@ -51,7 +51,7 @@ def find_similarities(query_embedding: torch.Tensor,
         norm_c = math.sqrt(sum(v ** 2 for v in e))
         dot = np.dot(query_embedding, e)
         cos_sim = (dot)/(norm_query * norm_c)
-        similarity.append((c, cos_sim))
+        similarity.append((c, float(cos_sim)))
     res = sorted(similarity, key=lambda x: x[1], reverse=True)
     return res[:k]
 
@@ -60,8 +60,7 @@ def semantic_search(model: SentenceTransformer,
                     query: str,
                     k: int,
                     all_chunks: list[dict[str, Any]],
-                    emb_chunks:
-                    torch.Tensor) -> list[tuple[dict[str, Any], float]]:
+                    emb_chunks: torch.Tensor) -> list[SemanticSource]:
     """Search semantically similar chunks for a query.
 
     Args:
@@ -75,9 +74,7 @@ def semantic_search(model: SentenceTransformer,
         The top k chunk-score pairs ranked by cosine similarity.
     """
     emb_query = model.encode(query)
-    chunks_content = [c["content"] for c in all_chunks]
-    emb_chunks = model.encode(chunks_content)
-
     sims = find_similarities(emb_query, emb_chunks, all_chunks, k)
-    return sims
+    return [SemanticSource.model_validate({**chunk, "score": score})
+            for chunk, score in sims]
 # ------------------

@@ -10,11 +10,12 @@
 
 ## Limits
 
-Chunking: Utilisation de MarkdownTextSplitter au lieu de MarkdownHeaderTextSplitter. Choix effectué en fonction de la contrainte max_chunk_size pour respecter l'énoncé et pouvoir conserver les index dans le texte d'origine. Mais en terme sémantique, l'utilisation de MarkdownHeaderTextSplitter aurait ete meilleure pour garder un meilleur contexte sur les chunks.
+Qwen/Qwen3-0.6B limitations de raisonnement (mauvaise orthographe, style raide, hallucinations...)
 
-Qwen/Qwen3-0.6B limitations
+all-MiniLM-L6-v2 limitations to 256 tokens, ce qui est idyllique pour des chunks de 2000 caracteres.
+Switch to Qwen/Qwen3-Embedding-8B. Tres mauvaise idee car son initialisation prend 15,1GB et affiche un message d'erreur à ce sujet : "MPS backend out of memory (MPS allocated: 19.44 GiB, other allocations: 752.00 KiB, max allowed: 20.13 GiB). Tried to allocate 438.00 MiB on shared pool."
 
-.py et .md seulement
+Une autre limite du RAG dans cette exercice est que le retrieval se contente des fichiers .py et .md du corpus, alors que beaucoup d'autres types de fichiers sont utilises et pourraient servir a augmenter la generation du LLM.
 
 ## Instructions
 
@@ -24,15 +25,19 @@ System Architecture
 
 Chunking strategy
 
-...
+Utilisation de la librairie Langchain 
+
+Utilisation de MarkdownTextSplitter au lieu de MarkdownHeaderTextSplitter. Choix effectué en fonction de la contrainte max_chunk_size pour respecter l'énoncé et pouvoir conserver les index dans le texte d'origine. Mais en terme sémantique, l'utilisation de MarkdownHeaderTextSplitter aurait ete meilleure pour garder un meilleur contexte sur les chunks.
 
 Retrieval method
 
-...
+Retrieval semantique pertinent 
 
 Performance analysis
 
-...
+Le retrieval demandé par le sujet basé sur l'algorithme BM25 (lexical) est plutôt efficace et a permis d'atteindre des scores initiaux de 82% pour les docs et 58% pour le code sans ajouter de stemmer ou autres optimisations. Ceci etant dit, je pensais qu'une approche par retrieval sémantique pouvait améliorer ces scores. En utilisant le modele d'embedding "sentence-transformers/all-MiniLM-L6-v2" je n'ai pas réussi à obtenir de bons scores séparément (55% docs et 37,4% code) en raison des limitations de tokens du modele (256 tokens) qui ne permettaient pas de vectoriser l'ensemble du chunk qui par defaut fait 2000 caracteres.
+
+Les performances du retrieval sont bonnes et l'entiereté de la pipeline met moins d'une minute à se lancer. Les limites de performances vont se situer du coté de la génération de réponse qui est tres longue, en particulier sur de grands batch de questions. La methode answer_dataset() prend environ 25 minutes.
 
 Design decisions:
 
@@ -51,7 +56,8 @@ Determiner la longueur max_new_tokens pour la generation pour pas perdre en perf
 Laisser le processus de pensee <think> de Qwen pour gagner en precision;
 Determiner un bon prompting (10 prompts differents essayés) pour les contraintes faithful, source-grounded etc. Qwen est capricieux.
 Une balise dans le prompt est commentée pour une meilleure generation, mais en la reactivant Qwen generera les sources avec une precision approximative. 
-Benchmake max token:
+
+Benchmark max token:
 
 Code :
 

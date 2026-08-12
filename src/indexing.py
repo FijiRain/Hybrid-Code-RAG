@@ -1,9 +1,12 @@
 from rich import print
 import bm25s
+import torch
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 from .chunking import md_chunker, py_chunker, verify_indices
 from .constants import (DATA_CHUNKS, DATA_INDEX, DATA_RAW,
-                        DEF_MAX_CHUNK_SIZE)
+                        DEF_MAX_CHUNK_SIZE, SEM_CHUNKS)
 from .utils import dump_chunks, load_files
 
 
@@ -58,3 +61,11 @@ def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
         f"{len(all_chunks)} chunks from "
         f"{len(files)} files in {DATA_CHUNKS}."
         "[/bold green]"))
+
+
+def build_embeddings_index(model: SentenceTransformer,
+                           all_chunks: list[dict]) -> torch.Tensor:
+    chunks_content = [c["content"] for c in all_chunks]
+    embeddings = model.encode(chunks_content)
+    np.save(SEM_CHUNKS, embeddings)
+    return embeddings

@@ -101,3 +101,32 @@ class StudentSearchResultsAndAnswer(BaseModel):
 
     search_results: List[MinimalAnswer]
     k: int
+
+
+# --- Bonus part ---
+class SemanticSource(MinimalSource):
+    """Metadata describing chunk in a semantic way.
+
+    Attributes:
+        score: similarity between query and source
+    """
+    score: float
+
+
+class SemanticSearchResult(BaseModel):
+    """Search result metadata for one question.
+
+    Attributes:
+        question_id: Identifier of the question.
+        question: Question text.
+        retrieved_sources: Top source chunks returned by the retriever.
+    """
+    question_id: str
+    question: str
+    retrieved_sources: List[SemanticSource]
+
+
+class StudentSemanticSearchResults(BaseModel):
+    search_results: List[SemanticSearchResult]
+    k: int
+# ------------------

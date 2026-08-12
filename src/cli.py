@@ -10,8 +10,9 @@ from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
                         SEARCH_DOCS, SEARCH_AND_ANSWER, SEM_MODEL, SEM_CHUNKS)
 from .data_models import (RagDataset, MinimalSearchResults,
                           StudentSearchResults, StudentSearchResultsAndAnswer,
-                          MinimalAnswer)
-from .indexing import build_index
+                          MinimalAnswer, SemanticSearchResult,
+                          StudentSemanticSearchResults)
+from .indexing import build_index, build_embeddings_index
 from .searching import search_sources, semantic_search
 from .answering import generate_simple_answer, load_model
 from .evaluating import calculate_iou
@@ -64,15 +65,15 @@ class Cli():
             chunks_content = [c["content"] for c in all_chunks]
             emb_chunks = model.encode(chunks_content)
             np.save(SEM_CHUNKS, emb_chunks)
-            result = semantic_search(model, query, k, all_chunks, emb_chunks)
-            for r in result:
-                print(f"File path : {r[0]["file_path"]}, sim score: {r[1]:.2f}")
-
+            results = semantic_search(model, query, k, all_chunks, emb_chunks)
+            for src in results:
+                print(f"{src.file_path} [Score: {src.score}]")
         # ------------------
 
     def search_dataset(self, dataset_path: str = DATA_DOCS,
                        save_directory: str = SAVE_SEARCH,
-                       k: int = 5) -> None:
+                       k: int = 5,
+                       r_type: str = "lex") -> None:
         """Run retrieval over a dataset and save the search results.
 
         Args:
@@ -92,21 +93,45 @@ class Cli():
             raise ValueError("k must be > 0.")
 
         all_chunks = reload_chunks()
-        retriever = bm25s.BM25.load(DATA_INDEX)
-        minsearch_list = []
-        for uq in dataset.rag_questions:
-            top_sources = search_sources(uq.question, k, all_chunks, retriever)
-            ms_result = MinimalSearchResults(question_id=uq.question_id,
-                                             question=uq.question,
-                                             retrieved_sources=top_sources)
-            minsearch_list.append(ms_result)
+        if r_type == "lex":
+            retriever = bm25s.BM25.load(DATA_INDEX)
+            minsearch_list = []
+            for uq in dataset.rag_questions:
+                top_sources = search_sources(uq.question, k,
+                                             all_chunks, retriever)
+                ms_result = MinimalSearchResults(question_id=uq.question_id,
+                                                 question=uq.question,
+                                                 retrieved_sources=top_sources)
+                minsearch_list.append(ms_result)
 
-        result = StudentSearchResults(search_results=minsearch_list, k=k)
-        filename = Path(dataset_path).name
-        print("[bold green]Dataset search done![/bold green]")
-        save_searchresults(result, save_directory, filename)
-        print(f"[green]Saved student_search_results "
-              f"to {save_directory}{filename}[/green]")
+            result = StudentSearchResults(search_results=minsearch_list, k=k)
+            filename = Path(dataset_path).name
+            print("[bold green]Dataset lexical search done![/bold green]")
+            save_searchresults(result, save_directory, filename)
+            print(f"[green]Saved student_search_results "
+                  f"to {save_directory}{filename}[/green]")
+
+        # --- Bonus Part ---
+        elif r_type == "sem":
+            search_list = []
+            model = SentenceTransformer(SEM_MODEL)
+            emb_chunks = build_embeddings_index(model, all_chunks)
+            for uq in tqdm(dataset.rag_questions, desc="Score generation",
+                           colour="green"):
+                top_sources = semantic_search(model, uq.question,
+                                              k, all_chunks, emb_chunks)
+                sm_result = SemanticSearchResult(question_id=uq.question_id,
+                                                 question=uq.question,
+                                                 retrieved_sources=top_sources)
+                search_list.append(sm_result)
+            result = StudentSemanticSearchResults(search_results=search_list,
+                                                  k=k)
+            filename = Path(dataset_path).name
+            print("[bold green]Dataset semantic search done![/bold green]")
+            save_searchresults(result, save_directory, filename)
+            print(f"[green]Saved student_search_results "
+                  f"to {save_directory}{filename}[/green]")
+        # -------------------
 
     def answer(self, query: str, k: int = 5) -> None:
         """Answer a single question using the retrieval pipeline.

@@ -3,7 +3,7 @@ from typing import Any
 from pathlib import Path
 
 from .constants import DATA_CHUNKS, DATA_INDEX
-from .data_models import StudentSearchResults
+from .data_models import StudentSearchResults, StudentSemanticSearchResults
 
 
 def dump_chunks(py: list[dict[str, Any]], md: list[dict[str, Any]]) -> None:
@@ -70,7 +70,8 @@ def load_files(dir: str) -> list[tuple[str, str]]:
     return res
 
 
-def save_searchresults(search_res: StudentSearchResults,
+def save_searchresults(search_res: StudentSearchResults
+                       | StudentSemanticSearchResults,
                        save_dir: str,
                        filename: str) -> None:
     """Persist search results to a JSON file.
