@@ -91,7 +91,7 @@ class Cli():
         print("[bold green]Dataset search done![/bold green]")
         save_searchresults(result, save_directory, filename)
         print(f"[green]Saved student_search_results "
-              f"to {save_directory}/{filename}[/green]")
+              f"to {save_directory}{filename}[/green]")
 
     def answer(self, query: str, k: int = 5) -> None:
         """Answer a single question using the retrieval pipeline.
@@ -188,7 +188,8 @@ class Cli():
     def retrieval_pipeline(self, dataset_path: str = DATA_DOCS,
                            save_directory: str = SAVE_SEARCH,
                            student_search_results_path: str = SEARCH_DOCS,
-                           answer_path: str = ANSWER_DOCS
+                           answer_path: str = ANSWER_DOCS,
+                           k: int = 5
                            ) -> None:
         """Run the full retrieval pipeline.
 
@@ -197,12 +198,13 @@ class Cli():
             save_directory: Directory where search results are written.
             student_search_results_path: Path to saved retrieval results.
             answer_path: Reference answer dataset for evaluation.
+            k: Number of top sources to keep per question.
 
         Returns:
             None.
         """
         self.index()
         print()
-        self.search_dataset(dataset_path, save_directory)
+        self.search_dataset(dataset_path, save_directory, k)
         print()
         self.evaluate(student_search_results_path, answer_path)
