@@ -2,15 +2,17 @@ import bm25s
 from rich import print
 from pathlib import Path
 from tqdm import tqdm
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
 from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
                         SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS,
-                        SEARCH_DOCS, SEARCH_AND_ANSWER)
+                        SEARCH_DOCS, SEARCH_AND_ANSWER, SEM_MODEL, SEM_CHUNKS)
 from .data_models import (RagDataset, MinimalSearchResults,
                           StudentSearchResults, StudentSearchResultsAndAnswer,
                           MinimalAnswer)
 from .indexing import build_index
-from .searching import search_sources
+from .searching import search_sources, semantic_search
 from .answering import generate_simple_answer, load_model
 from .evaluating import calculate_iou
 from .utils import reload_chunks, save_searchresults, thinking_length
@@ -20,7 +22,7 @@ class Cli():
     """CLI entry point for indexing, searching, and evaluating RAG data."""
 
     def index(self, max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
-        """Build the BM25 index from raw source files.
+        """Build the retrieval index from raw source files.
 
         Args:
             max_chunk_size: Maximum length of each chunk used for indexing.
@@ -30,7 +32,7 @@ class Cli():
         """
         build_index(max_chunk_size)
 
-    def search(self, query: str, k: int = 5) -> None:
+    def search(self, query: str, k: int = 5, r_type: str = "lex") -> None:
         """Search the indexed corpus and print the top matching sources.
 
         Args:
@@ -46,14 +48,27 @@ class Cli():
             raise ValueError("k must be > 0.")
 
         all_chunks = reload_chunks()
-        retriever = bm25s.BM25.load(DATA_INDEX)
-        results = search_sources(query, k, all_chunks, retriever)
-        for source in results:
-            print(
-                f"{source.file_path} "
-                f"[{source.first_character_index}:"
-                f"{source.last_character_index}]"
-            )
+        if r_type == "lex":
+            retriever = bm25s.BM25.load(DATA_INDEX)
+            results = search_sources(query, k, all_chunks, retriever)
+            for source in results:
+                print(
+                    f"{source.file_path} "
+                    f"[{source.first_character_index}:"
+                    f"{source.last_character_index}]"
+                )
+
+        # --- Bonus part ---
+        elif r_type == "sem":
+            model = SentenceTransformer(SEM_MODEL)
+            chunks_content = [c["content"] for c in all_chunks]
+            emb_chunks = model.encode(chunks_content)
+            np.save(SEM_CHUNKS, emb_chunks)
+            result = semantic_search(model, query, k, all_chunks, emb_chunks)
+            for r in result:
+                print(f"File path : {r[0]["file_path"]}, sim score: {r[1]:.2f}")
+
+        # ------------------
 
     def search_dataset(self, dataset_path: str = DATA_DOCS,
                        save_directory: str = SAVE_SEARCH,
