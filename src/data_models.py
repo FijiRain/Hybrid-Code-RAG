@@ -138,6 +138,7 @@ class StudentSemanticSearchResults(BaseModel):
 
 
 class StudentHybridSearchResults(BaseModel):
+    """Store hybrid search results and the number of retrieved sources."""
     search_results: List[SemanticSearchResult | MinimalSearchResults]
     k: int
 # ------------------

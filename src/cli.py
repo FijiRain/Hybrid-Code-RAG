@@ -253,6 +253,17 @@ class Cli():
     # --- Bonus part ---
     def hybrid_retrieval(self, lex_dataset: str,
                          sem_dataset: str) -> None:
+        """Fuse lexical and semantic search results using RRF.
+
+        Args:
+            lex_dataset: Path to the lexical search results dataset.
+            sem_dataset: Path to the semantic search results dataset.
+
+        Raises:
+            FileNotFoundError: If either dataset cannot be found.
+            ValueError: If datasets contain different numbers of questions or
+                mismatched question IDs.
+        """
         try:
             with open(lex_dataset, "r") as f:
                 lex = StudentSearchResults.model_validate_json(f.read())

@@ -67,6 +67,15 @@ def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
 # --- Bonus part ---
 def build_embeddings_index(model: SentenceTransformer,
                            all_chunks: list[dict]) -> torch.Tensor:
+    """Generate and save embeddings for all chunks.
+
+    Args:
+        model: SentenceTransformer model used to encode the chunks.
+        all_chunks: List of chunks containing a ``content`` field.
+
+    Returns:
+        A tensor containing the embeddings for all chunks.
+    """
     chunks_content = [c["content"] for c in all_chunks]
     embeddings: torch.Tensor = model.encode(chunks_content)
     np.save(SEM_CHUNKS, embeddings)

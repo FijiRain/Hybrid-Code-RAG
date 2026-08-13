@@ -84,6 +84,17 @@ def reciprocal_rank_fusion(
     sem_dataset: Sequence[SemanticSource |
                           tuple[dict[str, Any], float] | dict[str, Any]]
                         ) -> list[MinimalSource]:
+    """Fuse lexical and semantic rankings using Reciprocal Rank Fusion.
+
+    Args:
+        lex_dataset: Lexical search results ordered by relevance.
+        sem_dataset: Semantic search results ordered by relevance. Each
+            result can be a source, a source dictionary, or a tuple
+            containing a source dictionary and its score.
+
+    Returns:
+        A list of sources ranked by their fused RRF score.
+    """
     scores: dict[str, float] = {}
     chunk_lookup: dict[str, dict[str, Any]] = {}
     k = 60

@@ -13,13 +13,13 @@ SEARCH_CODE = ("data/output/search_results/"
                "dataset_code_public.json")
 SEARCH_DOCS = ("data/output/search_results/"
                "dataset_docs_public.json")
-DATA_DOCS = ("datasets_public/public/UnansweredQuestions/"
+DATA_DOCS = ("data/datasets_public/public/UnansweredQuestions/"
              "dataset_docs_public.json")
-DATA_CODE = ("datasets_public/public/UnansweredQuestions/"
+DATA_CODE = ("data/datasets_public/public/UnansweredQuestions/"
              "dataset_code_public.json")
-ANSWER_DOCS = ("datasets_public/public/AnsweredQuestions/"
+ANSWER_DOCS = ("data/datasets_public/public/AnsweredQuestions/"
                "dataset_docs_public.json")
-ANSWER_CODE = ("datasets_public/public/AnsweredQuestions/"
+ANSWER_CODE = ("data/datasets_public/public/AnsweredQuestions/"
                "dataset_code_public.json")
 SEARCH_AND_ANSWER = "data/output/search_results_and_answer/"
 SEM_DOCS = ("data/output/search_results/sem_dataset_docs_public.json")

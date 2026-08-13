@@ -93,7 +93,6 @@ def py_chunker(files: list[tuple[str, str]],
     return sources
 
 
-# ATTENTION si on demande une autre maniere de le faire dans la correction !
 def md_chunker(files: list[tuple[str, str]],
                max_chunk_size: int, overlap: int) -> list[MinimalSource]:
     """Split Markdown files into overlapping chunks.
