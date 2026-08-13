@@ -135,4 +135,9 @@ class StudentSemanticSearchResults(BaseModel):
     """
     search_results: List[SemanticSearchResult]
     k: int
+
+
+class StudentHybridSearchResults(BaseModel):
+    search_results: List[SemanticSearchResult | MinimalSearchResults]
+    k: int
 # ------------------

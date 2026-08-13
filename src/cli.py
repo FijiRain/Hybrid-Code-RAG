@@ -13,7 +13,7 @@ from .data_models import (RagDataset, MinimalSearchResults,
                           MinimalAnswer, SemanticSearchResult,
                           StudentSemanticSearchResults)
 from .indexing import build_index, build_embeddings_index
-from .searching import search_sources, semantic_search
+from .searching import search_sources, semantic_search, reciprocal_rank_fusion
 from .answering import generate_simple_answer, load_model
 from .evaluating import calculate_iou
 from .utils import reload_chunks, save_searchresults, thinking_length
@@ -249,3 +249,48 @@ class Cli():
         self.search_dataset(dataset_path, save_directory, k)
         print()
         self.evaluate(student_search_results_path, answer_path)
+
+    # --- Bonus part ---
+    def hybrid_retrieval(self, lex_dataset: str,
+                         sem_dataset: str) -> None:
+        try:
+            with open(lex_dataset, "r") as f:
+                lex = StudentSearchResults.model_validate_json(f.read())
+        except FileNotFoundError:
+            raise FileNotFoundError("Incorrect dataset_path value.")
+        try:
+            with open(sem_dataset, "r") as f:
+                sem = (StudentSemanticSearchResults.
+                       model_validate_json(f.read()))
+        except FileNotFoundError:
+            raise FileNotFoundError("Incorrect dataset_path value.")
+
+        if len(lex.search_results) != len(sem.search_results):
+            raise ValueError("Lexical and semantic datasets "
+                             "must have the same number of questions.")
+
+        target_k = min(lex.k, sem.k)
+
+        hybrid_results = []
+        for lex_res, sem_res in zip(lex.search_results, sem.search_results):
+            if lex_res.question_id != sem_res.question_id:
+                raise ValueError("Question IDs do not match "
+                                 "between lexical and semantic datasets.")
+
+            fused_sources = reciprocal_rank_fusion(
+                lex_res.retrieved_sources,
+                sem_res.retrieved_sources
+            )[:target_k]
+            hybrid_results.append(MinimalSearchResults(
+                question_id=lex_res.question_id,
+                question=lex_res.question,
+                retrieved_sources=fused_sources
+            ))
+
+        result = StudentSearchResults(search_results=hybrid_results,
+                                      k=target_k)
+        filename = "hybrid_" + Path(lex_dataset).name
+        save_searchresults(result, SAVE_SEARCH, filename)
+        print(f"[green]Saved hybrid_search_results to "
+              f"{SAVE_SEARCH}{filename}[/green]")
+    # ------------------

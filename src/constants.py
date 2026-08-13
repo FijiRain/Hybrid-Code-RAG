@@ -22,3 +22,5 @@ ANSWER_DOCS = ("datasets_public/public/AnsweredQuestions/"
 ANSWER_CODE = ("datasets_public/public/AnsweredQuestions/"
                "dataset_code_public.json")
 SEARCH_AND_ANSWER = "data/output/search_results_and_answer/"
+SEM_DOCS = ("data/output/search_results/sem_dataset_docs_public.json")
+SEM_CODE = ("data/output/search_results/sem_dataset_code_public.json")

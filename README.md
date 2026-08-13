@@ -234,6 +234,40 @@ Similar to `sentence-transformers/all-MiniLM-L6-v2`, but with a doubled context 
 | ---------: | ----------: | ----------: | --------------: | --------------: |
 |       2000 |     **82%** |   **57.6%** |             61% |           45% |
 
+## Hybrid Retrieval
+
+To combine the strengths of lexical and semantic retrieval, I implemented a hybrid retrieval approach based on **Reciprocal Rank Fusion (RRF)**.
+
+The system first performs two independent searches for each query:
+
+1. **BM25 retrieval**, which is effective at matching exact terms, identifiers and technical vocabulary.
+2. **Semantic retrieval**, which is better suited to finding conceptually similar content even when the wording differs.
+
+The two ranked result lists are then combined using RRF. Instead of directly comparing the scores produced by the two retrieval methods, RRF assigns each retrieved source a score based on its position in each ranking. Sources that appear highly ranked in both lists therefore receive a stronger combined score.
+
+```text
+                 Query
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+       BM25 index      Semantic index
+          │                 │
+          ▼                 ▼
+      Ranked list       Ranked list
+          │                 │
+          └────────┬────────┘
+                   ▼
+             RRF fusion
+                   │
+                   ▼
+          Hybrid ranked list
+                   │
+                   ▼
+                Top-k
+```
+
+This approach allows the system to combine complementary retrieval signals without requiring the BM25 and embedding scores to be directly comparable.
+The resulting hybrid index is then used to retrieve the final sources provided to the generation stage.
 
 ## Answer Generation
 
@@ -573,6 +607,9 @@ Large datasets, generated indices, model weights and generated outputs should no
 - LangChain [doc](https://lagnchain.readthedocs.io/en/stable/modules/indexes) on splitters
 - BM25S [doc](https://bm25s.github.io)
 - HF Qwen3-0.6B [doc](https://huggingface.co/Qwen/Qwen3-0.6B)
+- Embedding model Qwen [HF](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+- Embedding model [BAAI](https://huggingface.co/BAAI/bge-m3)
+- Hybrid retrieval [RRF](https://julien-gourdon.fr/article/reciprocal-rank-fusion)
 
 ### AI Usage
 

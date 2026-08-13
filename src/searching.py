@@ -2,7 +2,7 @@ import bm25s
 import math
 import numpy as np
 import torch
-from typing import Any
+from typing import Any, Sequence
 from sentence_transformers import SentenceTransformer
 
 from .data_models import MinimalSource, SemanticSource
@@ -77,4 +77,40 @@ def semantic_search(model: SentenceTransformer,
     sims = find_similarities(emb_query, emb_chunks, all_chunks, k)
     return [SemanticSource.model_validate({**chunk, "score": score})
             for chunk, score in sims]
+
+
+def reciprocal_rank_fusion(
+    lex_dataset: Sequence[MinimalSource | dict[str, Any]],
+    sem_dataset: Sequence[SemanticSource |
+                          tuple[dict[str, Any], float] | dict[str, Any]]
+                        ) -> list[MinimalSource]:
+    scores: dict[str, float] = {}
+    chunk_lookup: dict[str, dict[str, Any]] = {}
+    k = 60
+
+    for rank, chunk in enumerate(lex_dataset):
+        if isinstance(chunk, MinimalSource):
+            chunk_dict = chunk.model_dump()
+        else:
+            chunk_dict = chunk
+
+        key = f"{chunk_dict['file_path']}:{chunk_dict['chunk_index']}"
+        scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
+        chunk_lookup[key] = chunk_dict
+
+    for rank, sem_item in enumerate(sem_dataset):
+        # Accept chunk or (chunk, score)
+        chunk = sem_item[0] if isinstance(sem_item, tuple) else sem_item
+        if isinstance(chunk, SemanticSource):
+            chunk_dict = chunk.model_dump()
+        else:
+            chunk_dict = chunk
+
+        key = f"{chunk_dict['file_path']}:{chunk_dict['chunk_index']}"
+        scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
+        chunk_lookup[key] = chunk_dict
+
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return [MinimalSource.model_validate(chunk_lookup[key])
+            for key, _ in ranked]
 # ------------------
