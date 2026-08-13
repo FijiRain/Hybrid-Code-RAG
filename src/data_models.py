@@ -127,6 +127,12 @@ class SemanticSearchResult(BaseModel):
 
 
 class StudentSemanticSearchResults(BaseModel):
+    """Collection of search results for a batch of questions.
+
+    Attributes:
+        search_results: Search results associated with each question.
+        k: Number of retrieved sources kept per question.
+    """
     search_results: List[SemanticSearchResult]
     k: int
 # ------------------

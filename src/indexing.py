@@ -51,6 +51,7 @@ def build_index(max_chunk_size: int = DEF_MAX_CHUNK_SIZE) -> None:
     corpus_tokens = bm25s.tokenize(all_content)
 
     # All dict stored in the retriever
+    print("[yellow]Running BM25[/yellow]")
     all_chunks_dict = py_data_dict + md_data_dict
     retriever = bm25s.BM25(corpus=all_chunks_dict)
     retriever.index(corpus_tokens)

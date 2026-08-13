@@ -2,7 +2,7 @@
 
 *This project has been created as part of the 42 curriculum by tmoga*
 
-> "Heyo it's just another bombtrack!" — RAG de la Rocha certainly...
+> "Ayo it's just another bombtrack!" — RAG de la Rocha certainly...
 
 ## Description
 
@@ -23,7 +23,134 @@ The project uses **BM25** as its main lexical retrieval method and also explores
 
 System Architecture
 
-... 
+
+The architecture is designed around a simple CLI orchestrator and a modular
+RAG pipeline.
+
+### Main architecture (orchestration)
+
+```mermaid
+flowchart LR
+        U[User] --> CMD[CLI command<br/>fire.Fire Cli]
+        CMD --> CLI[Cli class<br/>orchestrator]
+
+        CLI --> IDX[index<br/>build_index]
+        CLI --> SRCH[search search_dataset<br/>search_sources semantic_search]
+        CLI --> ANS[answer answer_dataset<br/>generate_simple_answer]
+        CLI --> EVAL[evaluate<br/>calculate_iou]
+
+        IDX --> CHUNK[chunking.py<br/>py_chunker md_chunker verify_indices]
+        IDX --> BM25I[BM25 index<br/>data/processed/BM25_index]
+        IDX --> SEMI[Embedding index<br/>data/processed/Semantic_index.npy]
+
+        SRCH --> BM25I
+        SRCH --> SEMI
+        SRCH --> CHUNKS[Reloaded chunks<br/>reload_chunks]
+
+        ANS --> LLM[Qwen Qwen3-0.6B<br/>load_model raw_generation parse_answer]
+        ANS --> CHUNKS
+        ANS --> SRCH
+
+        EVAL --> GT[Reference answers dataset]
+        EVAL --> RES[Student retrieval results]
+
+        classDef entry fill:#E8F3FF,stroke:#1B6FB8,stroke-width:1.2px;
+        classDef core fill:#EAF8EF,stroke:#2E8B57,stroke-width:1.2px;
+        classDef data fill:#FFF7E6,stroke:#C58A1E,stroke-width:1.2px;
+
+        class U,CMD entry;
+        class CLI,IDX,SRCH,ANS,EVAL core;
+        class CHUNK,BM25I,SEMI,CHUNKS,LLM,GT,RES data;
+```
+
+### Main pipeline stages (high-level)
+
+```mermaid
+flowchart TD
+        A[1. Ingestion<br/>data/raw/vllm-0.10.1] --> B[2. Chunking<br/>PythonCodeTextSplitter + MarkdownTextSplitter]
+        B --> C[3. Indexing<br/>BM25 + optional embeddings]
+        C --> D[4. Retrieval<br/>Top-k sources for a question]
+        D --> E[5. Augmentation<br/>build_prompt with retrieved sources]
+        E --> F[6. Generation<br/>Qwen/Qwen3-0.6B]
+        F --> G[7. Output<br/>answer + sources]
+        G --> H[8. Evaluation<br/>Recall@k via IoU]
+```
+
+### Data model classes (Pydantic)
+
+```mermaid
+classDiagram
+        class MinimalSource {
+            +str file_path
+            +int first_character_index
+            +int last_character_index
+            +str content
+            +int chunk_index
+        }
+
+        class UnansweredQuestion {
+            +str question_id
+            +str question
+        }
+
+        class AnsweredQuestion {
+            +List~MinimalSource~ sources
+            +str answer
+        }
+
+        class RagDataset {
+            +List~QuestionItem~ rag_questions
+        }
+
+        class MinimalSearchResults {
+            +str question_id
+            +str question
+            +List~MinimalSource~ retrieved_sources
+        }
+
+        class MinimalAnswer {
+            +str answer
+        }
+
+        class StudentSearchResults {
+            +List~MinimalSearchResults~ search_results
+            +int k
+        }
+
+        class StudentSearchResultsAndAnswer {
+            +List~MinimalAnswer~ search_results
+            +int k
+        }
+
+        class SemanticSource {
+            +float score
+        }
+
+        class SemanticSearchResult {
+            +str question_id
+            +str question
+            +List~SemanticSource~ retrieved_sources
+        }
+
+        class StudentSemanticSearchResults {
+            +List~SemanticSearchResult~ search_results
+            +int k
+        }
+
+        UnansweredQuestion <|-- AnsweredQuestion
+        MinimalSearchResults <|-- MinimalAnswer
+        MinimalSource <|-- SemanticSource
+
+        AnsweredQuestion --> MinimalSource
+        RagDataset --> UnansweredQuestion
+        RagDataset --> AnsweredQuestion
+        MinimalSearchResults --> MinimalSource
+        StudentSearchResults --> MinimalSearchResults
+        StudentSearchResultsAndAnswer --> MinimalAnswer
+        SemanticSearchResult --> SemanticSource
+        StudentSemanticSearchResults --> SemanticSearchResult
+```
+
 
 ## Chunking Strategy
 
@@ -91,6 +218,16 @@ Result tends to improve a bit on a smaller max_chunk_size indexing, but still wi
 |---|---:|---:|
 | BM25 | **70%** | **48.5%** |
 | all-MiniLM-L6-v2 | 64% | 44.4% |
+
+The benchmark below shows that chunk size has a significant impact on retrieval performance. BM25 performs best with larger chunks, reaching 82% recall@5 on documentation questions and 57.6% on code questions with 2000-character chunks. Semantic retrieval benefits from smaller chunks, reaching 64% on documentation and 44.4% on code questions with 500-character chunks.
+This suggests that lexical retrieval benefits from having more context and more terms available within each chunk, while semantic retrieval is more sensitive to the amount of information represented by the embedding model. But with only 256 tokens, all-MiniLM-L6-v2 cannot be judge pertinent for our purpose.
+
+| Chunk size | BM25 — Docs | BM25 — Code | Semantic — Docs | Semantic — Code |
+| ---------: | ----------: | ----------: | --------------: | --------------: |
+|       2000 |     **82%** |   **57.6%** |             55% |           37.4% |
+|        500 |         70% |       48.5% |         **64%** |       **44.4%** |
+|        200 |         68% |       38.4% |             64% |           38.4% |
+
 
 ## Answer Generation
 
