@@ -127,7 +127,7 @@ class Cli():
                 search_list.append(sm_result)
             s_result = StudentSemanticSearchResults(search_results=search_list,
                                                     k=k)
-            filename = Path(dataset_path).name
+            filename = "sem_" + Path(dataset_path).name
             print("[bold green]Dataset semantic search done![/bold green]")
             save_searchresults(s_result, save_directory, filename)
             print(f"[green]Saved student_search_results "

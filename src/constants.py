@@ -1,5 +1,5 @@
 DEF_MODEL = "Qwen/Qwen3-0.6B"
-SEM_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+SEM_MODEL = "BAAI/bge-small-en-v1.5"
 DEF_MAX_CHUNK_SIZE = 2000
 
 
