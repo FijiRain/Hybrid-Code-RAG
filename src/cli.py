@@ -98,7 +98,8 @@ class Cli():
         if r_type == "lex":
             retriever = bm25s.BM25.load(DATA_INDEX)
             minsearch_list = []
-            for uq in dataset.rag_questions:
+            for uq in tqdm(dataset.rag_questions, desc="Retrieving...",
+                           colour="green"):
                 top_sources = search_sources(uq.question, k,
                                              all_chunks, retriever)
                 ms_result = MinimalSearchResults(question_id=uq.question_id,
@@ -253,7 +254,6 @@ class Cli():
         self.search_dataset(dataset_path1, save_directory, k)
         print()
         self.search_dataset(dataset_path2, save_directory, k)
-
         print()
         self.evaluate(student_search_results_path1, answer_path1)
         print()
