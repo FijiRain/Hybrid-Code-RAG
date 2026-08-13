@@ -7,7 +7,8 @@ import numpy as np
 
 from .constants import (DEF_MAX_CHUNK_SIZE, DATA_INDEX,
                         SAVE_SEARCH, DATA_DOCS, ANSWER_DOCS,
-                        SEARCH_DOCS, SEARCH_AND_ANSWER, SEM_MODEL, SEM_CHUNKS)
+                        SEARCH_DOCS, SEARCH_AND_ANSWER, SEM_MODEL,
+                        SEM_CHUNKS, DATA_CODE, SEARCH_CODE, ANSWER_CODE)
 from .data_models import (RagDataset, MinimalSearchResults,
                           StudentSearchResults, StudentSearchResultsAndAnswer,
                           MinimalAnswer, SemanticSearchResult,
@@ -226,10 +227,13 @@ class Cli():
         """
         thinking_length()
 
-    def retrieval_pipeline(self, dataset_path: str = DATA_DOCS,
+    def retrieval_pipeline(self, dataset_path1: str = DATA_DOCS,
+                           dataset_path2: str = DATA_CODE,
                            save_directory: str = SAVE_SEARCH,
-                           student_search_results_path: str = SEARCH_DOCS,
-                           answer_path: str = ANSWER_DOCS,
+                           student_search_results_path1: str = SEARCH_DOCS,
+                           student_search_results_path2: str = SEARCH_CODE,
+                           answer_path1: str = ANSWER_DOCS,
+                           answer_path2: str = ANSWER_CODE,
                            k: int = 5
                            ) -> None:
         """Run the full retrieval pipeline.
@@ -246,9 +250,14 @@ class Cli():
         """
         self.index()
         print()
-        self.search_dataset(dataset_path, save_directory, k)
+        self.search_dataset(dataset_path1, save_directory, k)
         print()
-        self.evaluate(student_search_results_path, answer_path)
+        self.search_dataset(dataset_path2, save_directory, k)
+
+        print()
+        self.evaluate(student_search_results_path1, answer_path1)
+        print()
+        self.evaluate(student_search_results_path2, answer_path2)
 
     # --- Bonus part ---
     def hybrid_retrieval(self, lex_dataset: str,

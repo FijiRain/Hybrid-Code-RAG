@@ -2,6 +2,7 @@
 data/processed
 output
 Dockerfile
+rag_correc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
