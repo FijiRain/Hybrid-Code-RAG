@@ -1,12 +1,8 @@
-# RAG_Against_The_Machine
-
-*This project has been created as part of the 42 curriculum by tmoga*
-
-> "Ayo it's just another bombtrack!" — RAG de la Rocha certainly...
+# Hybrid-Code-RAG
 
 # Description
 
-**RAG Against The Machine** is a Retrieval-Augmented Generation (RAG) system designed to answer questions about a codebase.
+**Hybrid-Code-RAG** is a Retrieval-Augmented Generation (RAG) system designed to answer questions about a codebase.
 
 The project implements a complete RAG pipeline:
 
