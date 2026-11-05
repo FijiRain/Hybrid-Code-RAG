@@ -2,7 +2,7 @@ SRC = src
 VENV = .venv
 PYTHON = $(VENV)/bin/python3
 RUN = uv run
-TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output output $(SRC)/__pycache__ __pycache__ $(VENV) .mypy_cache data/output .uv_cache data/output
+TRASH = $(VENV) .mypy_cache .uv_cache data/processed data/chunking_output output $(SRC)/__pycache__ __pycache__ $(VENV) .mypy_cache data/output .uv_cache data/output data/raw
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports \
 			--disallow-untyped-defs --check-untyped-defs
 UV_CACHE = .uv_cache
@@ -42,6 +42,9 @@ install:
 			sleep 0.1; \
 		done; \
 		wait $$pid; exit $$?'
+
+	@echo "$(BOLD)Installing VLLM codebase...:$(RESET)"
+	./setup_data.sh
 
 	@echo "\n$(GREEN)All dependencies successfully installed$(RESET)"
 	@echo "\n$(SUCCESS)Project can now be run safely!$(RESET)"
